@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Analytics - HMS')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1 d-flex align-items-center gap-2">
+                <i class="bi bi-bar-chart-fill text-primary"></i> Analytics
+            </h2>
+            <div class="text-muted">Track your business performance and insights</div>
+        </div>
+        <div class="d-flex gap-2">
+            <select class="form-select" style="width: auto;">
+                <option>Last 30 days</option>
+                <option>Last 7 days</option>
+                <option>This month</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Key Metrics Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icon" style="background: #dbeafe; color: #2563eb;">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <div>
+                            <div class="value" th:text="${totalPatients}">0</div>
+                            <div class="small text-muted">Total Patients</div>
+                            <div class="trend text-success">+12% vs last month</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icon" style="background: #dcfce7; color: #16a34a;">
+                            <i class="bi bi-currency-dollar"></i>
+                        </div>
+                        <div>
+                            <div class="value">₹12,450</div>
+                            <div class="small text-muted">Revenue</div>
+                            <div class="trend text-success">+8% vs last month</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icon" style="background: #fef3c7; color: #d97706;">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+                        <div>
+                            <div class="value" th:text="${totalAppointments}">0</div>
+                            <div class="small text-muted">Total Bookings</div>
+                            <div class="trend text-success">+15% vs last month</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icon" style="background: #fce7f3; color: #be185d;">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                        <div>
+                            <div class="value" th:text="${todayAppointments}">0</div>
+                            <div class="small text-muted">Today's Appointments</div>
+                            <div class="trend text-muted">Today</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="card shadow-soft border-0">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">Appointment Trends</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="appointmentChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-soft border-0">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">Patient Demographics</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="demographicsChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Sample chart data - replace with real data from backend
+const appointmentCtx = document.getElementById('appointmentChart').getContext('2d');
+new Chart(appointmentCtx, {
+    type: 'line',
+    data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+            label: 'Appointments',
+            data: [12, 19, 3, 5, 2, 3],
+            borderColor: '#4f46e5',
+            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } }
+    }
+});
+
+const demographicsCtx = document.getElementById('demographicsChart').getContext('2d');
+new Chart(demographicsCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Adults', 'Children', 'Seniors'],
+        datasets: [{
+            data: [45, 25, 30],
+            backgroundColor: ['#4f46e5', '#22c55e', '#f59e0b']
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Patient History - HMS')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1 d-flex align-items-center gap-2">
+                <i class="bi bi-person-heart text-primary"></i>
+                <span th:text="${patient.firstName + ' ' + patient.lastName}">John Doe</span>
+            </h2>
+            <div class="text-muted">Medical history and consultation notes</div>
+        </div>
+        <a th:href="@{'/doctor/notes/new?patientId=' + ${patient.id}}" class="btn btn-primary btn-icon">
+            <i class="bi bi-plus-circle"></i> Add Note
+        </a>
+    </div>
+
+    <!-- Patient Info Card -->
+    <div class="card shadow-soft border-0 mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="text-muted small">EMAIL</div>
+                    <div th:text="${patient.email ?: 'Not provided'}">john@example.com</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">PHONE</div>
+                    <div th:text="${patient.phone ?: 'Not provided'}">+1234567890</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">DATE OF BIRTH</div>
+                    <div th:text="${patient.dateOfBirth ?: 'Not provided'}">1990-01-01</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">ADDRESS</div>
+                    <div th:text="${patient.address ?: 'Not provided'}">123 Main St</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical Notes Timeline -->
+    <div class="row">
+        <div class="col-12">
+            <h5 class="mb-3">Medical History</h5>
+            <div class="timeline">
+                <div class="timeline-item" th:each="note : ${notes}">
+                    <div class="card shadow-soft border-0 mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-calendar-event text-primary"></i>
+                                    <span class="fw-semibold" th:text="${#temporals.format(note.createdAt, 'MMM dd, yyyy')}">Jan 15, 2024</span>
+                                    <span class="text-muted" th:text="${#temporals.format(note.createdAt, 'HH:mm')}">10:30</span>
+                                </div>
+                                <span class="badge bg-primary-subtle text-primary" th:text="'Dr. ' + ${note.doctorUsername}">Dr. jane</span>
+                            </div>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-4" th:if="${note.diagnosis}">
+                                    <div class="fw-semibold small text-muted mb-1">DIAGNOSIS</div>
+                                    <div th:text="${note.diagnosis}">Common cold</div>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="fw-semibold small text-muted mb-1">CONSULTATION NOTES</div>
+                                    <div th:text="${note.notes}">Patient reports fever and cough for 3 days...</div>
+                                </div>
+                                <div class="col-12" th:if="${note.prescription}">
+                                    <div class="fw-semibold small text-muted mb-1">PRESCRIPTION</div>
+                                    <div class="bg-light p-2 rounded" th:text="${note.prescription}">Paracetamol 500mg twice daily</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center text-muted py-4" th:if="${#lists.isEmpty(notes)}">
+                    <i class="bi bi-clipboard2-pulse display-4 text-muted"></i>
+                    <div class="mt-2">No medical history available. Click "Add Note" to start documenting.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

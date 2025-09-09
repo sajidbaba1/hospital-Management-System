@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Medical Notes - HMS')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1 d-flex align-items-center gap-2">
+                <i class="bi bi-clipboard2-pulse-fill text-primary"></i> Medical Notes
+            </h2>
+            <div class="text-muted">Your patient consultation records</div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-4 col-md-6" th:each="note : ${notes}">
+            <div class="card shadow-soft border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-start gap-3 mb-3">
+                        <div class="icon" style="background: #ecfdf5; color: #059669;">
+                            <i class="bi bi-person-heart"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1" th:text="${note.patient.firstName + ' ' + note.patient.lastName}">John Doe</h6>
+                            <div class="small text-muted" th:text="${#temporals.format(note.createdAt, 'MMM dd, yyyy HH:mm')}">Jan 15, 2024 10:30</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="fw-semibold small text-muted mb-1">DIAGNOSIS</div>
+                        <div class="small" th:text="${note.diagnosis ?: 'No diagnosis recorded'}">Common cold</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="fw-semibold small text-muted mb-1">NOTES</div>
+                        <div class="small text-truncate" th:text="${note.notes}">Patient reports fever and cough...</div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a th:href="@{'/doctor/notes/patient/' + ${note.patient.id}}" class="btn btn-sm btn-outline-primary w-100">
+                        <i class="bi bi-eye"></i> View Full History
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-12" th:if="${#lists.isEmpty(notes)}">
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-clipboard2-pulse display-1 text-muted"></i>
+                <div class="mt-3">No medical notes yet. Start by viewing a patient's appointment.</div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

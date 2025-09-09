@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('New Medical Note - HMS')"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<main class="container py-4">
+    <div class="mb-4">
+        <h2 class="mb-1 d-flex align-items-center gap-2">
+            <i class="bi bi-clipboard2-plus text-primary"></i> New Medical Note
+        </h2>
+        <div class="text-muted">Document patient consultation and treatment</div>
+    </div>
+
+    <div class="card shadow-soft border-0">
+        <div class="card-body">
+            <form th:action="@{/doctor/notes}" th:object="${note}" method="post" class="row g-3">
+                <input type="hidden" th:field="*{patient}"/>
+
+                <div class="col-12">
+                    <div class="alert alert-info d-flex align-items-center gap-2">
+                        <i class="bi bi-info-circle"></i>
+                        <div>
+                            <strong>Patient:</strong> 
+                            <span th:text="${note.patient.firstName + ' ' + note.patient.lastName}">John Doe</span>
+                            <span class="text-muted">•</span>
+                            <span th:text="${note.patient.email}">john@example.com</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Diagnosis</label>
+                    <input type="text" class="form-control" th:field="*{diagnosis}" placeholder="e.g., Common cold, Hypertension">
+                    <div class="text-danger" th:if="${#fields.hasErrors('diagnosis')}" th:errors="*{diagnosis}"></div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Consultation Notes <span class="text-danger">*</span></label>
+                    <textarea class="form-control" rows="4" th:field="*{notes}" 
+                              placeholder="Patient symptoms, examination findings, medical history discussed..." required></textarea>
+                    <div class="text-danger" th:if="${#fields.hasErrors('notes')}" th:errors="*{notes}"></div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Prescription & Treatment Plan</label>
+                    <textarea class="form-control" rows="3" th:field="*{prescription}" 
+                              placeholder="Medications, dosage, follow-up instructions..."></textarea>
+                    <div class="text-danger" th:if="${#fields.hasErrors('prescription')}" th:errors="*{prescription}"></div>
+                </div>
+
+                <div class="col-12 d-flex gap-2 pt-3">
+                    <a th:href="@{'/doctor/notes/patient/' + ${note.patient.id}}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Save Medical Note
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -1,18 +1,26 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
-<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm" th:fragment="navbar">
+<nav class="navbar navbar-expand-lg bg-white border-bottom shadow-sm" th:fragment="navbar">
     <div class="container-fluid">
-        <a class="navbar-brand fw-semibold" href="/">HMS</a>
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+            <img src="/img/logo.svg" alt="logo" width="28" height="28">
+            <div class="d-flex flex-column lh-1">
+                <strong>HMS</strong>
+                <small class="text-muted">Care & Clinics</small>
+            </div>
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link" href="/dashboard" sec:authorize="isAuthenticated()">Dashboard</a></li>
-                <li class="nav-item" sec:authorize="hasAnyRole('ADMIN','RECEPTIONIST')"><a class="nav-link" href="/patients">Patients</a></li>
-                <li class="nav-item" sec:authorize="hasRole('RECEPTIONIST')"><a class="nav-link" href="/appointments">Appointments</a></li>
-                <li class="nav-item" sec:authorize="hasRole('DOCTOR')"><a class="nav-link" href="/doctor">Doctor</a></li>
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 nav-pills gap-1">
+                <li class="nav-item"><a class="nav-link pill" href="/" data-nav="home"><i class="bi bi-house"></i> Home</a></li>
+                <li class="nav-item" sec:authorize="isAuthenticated()"><a class="nav-link pill" href="/dashboard" data-nav="dashboard"><i class="bi bi-grid"></i> Dashboard</a></li>
+                <li class="nav-item" sec:authorize="hasAnyRole('ADMIN','RECEPTIONIST')"><a class="nav-link pill" href="/patients" data-nav="patients"><i class="bi bi-people"></i> Patients</a></li>
+                <li class="nav-item" sec:authorize="hasRole('RECEPTIONIST')"><a class="nav-link pill" href="/appointments" data-nav="appointments"><i class="bi bi-calendar-event"></i> Appointments</a></li>
+                <li class="nav-item" sec:authorize="hasRole('DOCTOR')"><a class="nav-link pill" href="/doctor" data-nav="doctor"><i class="bi bi-clipboard2-pulse"></i> Doctor</a></li>
+                <li class="nav-item" sec:authorize="isAuthenticated()"><a class="nav-link pill" href="/settings" data-nav="settings"><i class="bi bi-sliders"></i> Settings</a></li>
             </ul>
             <div class="d-flex align-items-center gap-2">
                 <div class="dropdown" sec:authorize="isAuthenticated()">
@@ -32,7 +40,7 @@
                 </div>
                 <div class="me-1 d-flex align-items-center" sec:authorize="isAuthenticated()">
                     <span class="small text-muted me-2">Signed in as</span>
-                    <span class="badge bg-primary-subtle text-primary border border-primary" sec:authentication="name">user</span>
+                    <span class="avatar badge rounded-circle bg-primary text-white" sec:authentication="name">U</span>
                 </div>
                 <a class="btn btn-outline-primary" href="/login" sec:authorize="!isAuthenticated()">Login</a>
                 <form sec:authorize="isAuthenticated()" class="ms-2" th:action="@{/logout}" method="post">
