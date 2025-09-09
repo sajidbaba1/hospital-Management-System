@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm" th:fragment="navbar">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-semibold" href="/">HMS</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item"><a class="nav-link" href="/dashboard" sec:authorize="isAuthenticated()">Dashboard</a></li>
+                <li class="nav-item" sec:authorize="hasAnyRole('ADMIN','RECEPTIONIST')"><a class="nav-link" href="/patients">Patients</a></li>
+                <li class="nav-item" sec:authorize="hasRole('RECEPTIONIST')"><a class="nav-link" href="/appointments">Appointments</a></li>
+                <li class="nav-item" sec:authorize="hasRole('DOCTOR')"><a class="nav-link" href="/doctor">Doctor</a></li>
+            </ul>
+            <div class="d-flex">
+                <div class="me-3 d-flex align-items-center" sec:authorize="isAuthenticated()">
+                    <span class="small text-muted me-2">Signed in as</span>
+                    <span class="badge bg-primary-subtle text-primary border border-primary" sec:authentication="name">user</span>
+                </div>
+                <a class="btn btn-outline-primary" href="/login" sec:authorize="!isAuthenticated()">Login</a>
+                <form sec:authorize="isAuthenticated()" class="ms-2" th:action="@{/logout}" method="post">
+                    <button class="btn btn-outline-danger">Logout</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+</body>
+</html>
