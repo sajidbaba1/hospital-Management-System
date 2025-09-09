@@ -4,6 +4,8 @@ import com.hms.patient.PatientRepository;
 import com.hms.user.Role;
 import com.hms.user.UserAccount;
 import com.hms.user.UserRepository;
+import com.hms.notification.Notification;
+import com.hms.notification.NotificationRepository;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -23,11 +25,13 @@ public class AppointmentController {
     private final AppointmentRepository appointments;
     private final PatientRepository patients;
     private final UserRepository users;
+    private final NotificationRepository notifications;
 
-    public AppointmentController(AppointmentRepository appointments, PatientRepository patients, UserRepository users) {
+    public AppointmentController(AppointmentRepository appointments, PatientRepository patients, UserRepository users, NotificationRepository notifications) {
         this.appointments = appointments;
         this.patients = patients;
         this.users = users;
+        this.notifications = notifications;
     }
 
     @GetMapping
@@ -67,15 +71,22 @@ public class AppointmentController {
             model.addAttribute("statuses", AppointmentStatus.values());
             return "appointments/form";
         }
+        boolean isNew = (appt.getId() == null);
         appointments.save(appt);
+        // notify doctor
+        notifications.save(new Notification(appt.getDoctorUsername(),
+                (isNew ? "New" : "Updated") + " appointment for " + appt.getPatient().getFirstName() + " at " + appt.getScheduledAt()));
         ra.addFlashAttribute("success", "Appointment saved");
         return "redirect:/appointments";
     }
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
-        if (appointments.existsById(id)) {
+        if (appointments.findById(id).isPresent()) {
+            Appointment a = appointments.findById(id).get();
             appointments.deleteById(id);
+            notifications.save(new Notification(a.getDoctorUsername(),
+                    "Appointment cancelled for " + a.getPatient().getFirstName() + " at " + a.getScheduledAt()));
             ra.addFlashAttribute("success", "Appointment deleted");
         } else {
             ra.addFlashAttribute("error", "Appointment not found");

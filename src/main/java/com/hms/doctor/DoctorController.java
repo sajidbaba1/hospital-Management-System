@@ -3,6 +3,8 @@ package com.hms.doctor;
 import com.hms.appointment.Appointment;
 import com.hms.appointment.AppointmentRepository;
 import com.hms.appointment.AppointmentStatus;
+import com.hms.notification.Notification;
+import com.hms.notification.NotificationRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -21,9 +23,11 @@ import java.util.List;
 public class DoctorController {
 
     private final AppointmentRepository appointments;
+    private final NotificationRepository notifications;
 
-    public DoctorController(AppointmentRepository appointments) {
+    public DoctorController(AppointmentRepository appointments, NotificationRepository notifications) {
         this.appointments = appointments;
+        this.notifications = notifications;
     }
 
     @GetMapping
@@ -52,6 +56,11 @@ public class DoctorController {
             }
             a.setStatus(status);
             appointments.save(a);
+            // Notify admin and receptionist accounts if they exist
+            notifications.save(new Notification("admin",
+                    "Doctor " + auth.getName() + " marked appointment for " + a.getPatient().getFirstName() + " as " + status));
+            notifications.save(new Notification("reception",
+                    "Doctor " + auth.getName() + " marked appointment for " + a.getPatient().getFirstName() + " as " + status));
             ra.addFlashAttribute("success", "Appointment updated");
             return "redirect:/doctor";
         }).orElseGet(() -> {

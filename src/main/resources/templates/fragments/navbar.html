@@ -14,8 +14,23 @@
                 <li class="nav-item" sec:authorize="hasRole('RECEPTIONIST')"><a class="nav-link" href="/appointments">Appointments</a></li>
                 <li class="nav-item" sec:authorize="hasRole('DOCTOR')"><a class="nav-link" href="/doctor">Doctor</a></li>
             </ul>
-            <div class="d-flex">
-                <div class="me-3 d-flex align-items-center" sec:authorize="isAuthenticated()">
+            <div class="d-flex align-items-center gap-2">
+                <div class="dropdown" sec:authorize="isAuthenticated()">
+                    <button class="btn btn-light position-relative" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-bell"></i>
+                        <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">0</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notifDropdown" style="min-width: 320px; max-height: 60vh; overflow:auto;">
+                        <li class="dropdown-header">Notifications</li>
+                        <li><hr class="dropdown-divider"></li>
+                        <div id="notifList">
+                            <div class="text-center text-muted small p-3">No notifications</div>
+                        </div>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><button class="dropdown-item text-center" id="markAllReadBtn">Mark all as read</button></li>
+                    </ul>
+                </div>
+                <div class="me-1 d-flex align-items-center" sec:authorize="isAuthenticated()">
                     <span class="small text-muted me-2">Signed in as</span>
                     <span class="badge bg-primary-subtle text-primary border border-primary" sec:authentication="name">user</span>
                 </div>
@@ -27,5 +42,98 @@
         </div>
     </div>
 </nav>
+
+<!-- Toast container -->
+<div class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+<!-- Chatbot Floating UI -->
+<button id="chatbot-toggle" class="btn btn-primary rounded-circle btn-lg">
+    <i class="bi bi-chat-dots"></i>
+ </button>
+<div id="chatbot-panel" class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-robot me-1"></i> HMS Assistant</span>
+        <button type="button" class="btn-close" aria-label="Close"></button>
+    </div>
+    <div class="chat-body p-2" id="chat-body"></div>
+    <div class="p-2 d-flex gap-2">
+        <input id="chat-input" class="form-control" placeholder="Ask me anything..."/>
+        <button id="chat-send" class="btn btn-primary"><i class="bi bi-send"></i></button>
+    </div>
+ </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Notifications polling
+async function refreshNotifications(){
+  try{
+    const [countRes, listRes] = await Promise.all([
+      fetch('/api/notifications/count'),
+      fetch('/api/notifications')
+    ]);
+    if(!countRes.ok||!listRes.ok) return;
+    const count = await countRes.json();
+    const list = await listRes.json();
+    const badge = document.getElementById('notifBadge');
+    if(count>0){ badge.classList.remove('d-none'); badge.textContent = count; }
+    else { badge.classList.add('d-none'); }
+    const container = document.getElementById('notifList');
+    container.innerHTML = '';
+    list.forEach(n=>{
+      const item = document.createElement('li');
+      item.innerHTML = `<div class="px-3 py-2 ${n.read?'' : 'bg-light'}">`+
+        `<div class="small">${new Date(n.createdAt).toLocaleString()}</div>`+
+        `<div>${n.message}</div>`+
+        `</div>`;
+      container.appendChild(item);
+    });
+    if(list.length===0){ container.innerHTML = '<div class="text-center text-muted small p-3">No notifications</div>'; }
+  }catch(e){ /* ignore */ }
+}
+setInterval(refreshNotifications, 10000);
+document.addEventListener('DOMContentLoaded', ()=>{
+  refreshNotifications();
+  const markBtn = document.getElementById('markAllReadBtn');
+  if(markBtn){ markBtn.addEventListener('click', async ()=>{ await fetch('/api/notifications/read-all', {method:'POST'}); refreshNotifications(); }); }
+});
+
+// Toast helper
+function showToast(msg){
+  const container = document.querySelector('.toast-container');
+  const wrapper = document.createElement('div');
+  wrapper.className = 'toast align-items-center text-bg-dark border-0 show mb-2';
+  wrapper.setAttribute('role','alert');
+  wrapper.innerHTML = `<div class="d-flex"><div class="toast-body">${msg}</div>`+
+    `<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
+  container.appendChild(wrapper);
+  setTimeout(()=> wrapper.remove(), 4000);
+}
+
+// Chatbot interactions
+const panel = document.getElementById('chatbot-panel');
+const toggle = document.getElementById('chatbot-toggle');
+const closeBtn = panel.querySelector('.btn-close');
+const input = document.getElementById('chat-input');
+const sendBtn = document.getElementById('chat-send');
+const bodyEl = document.getElementById('chat-body');
+
+function addMsg(text, who){
+  const div = document.createElement('div');
+  div.className = 'chat-message ' + who;
+  div.textContent = text;
+  bodyEl.appendChild(div); bodyEl.scrollTop = bodyEl.scrollHeight;
+}
+async function send(){
+  const text = input.value.trim(); if(!text) return; input.value=''; addMsg(text,'user');
+  try{
+    const res = await fetch('/api/chatbot', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message:text})});
+    const data = await res.json(); addMsg(data.reply,'bot');
+  }catch(e){ addMsg('Sorry, something went wrong.','bot'); }
+}
+toggle.addEventListener('click', ()=>{ panel.style.display = panel.style.display==='block'?'none':'block'; });
+closeBtn.addEventListener('click', ()=> panel.style.display='none');
+sendBtn.addEventListener('click', send);
+input.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ send(); }});
+</script>
 </body>
 </html>
